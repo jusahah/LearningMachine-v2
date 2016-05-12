@@ -3,7 +3,7 @@ var uuid = require('node-uuid');
 var Promise = require('bluebird');
 
 module.exports = function(Box, tempFolder) {
-	var idsToResolves = {};
+	var idsToPromiseCallbacks = {};
 
 	Box.Application.addService('processCommunication', function(application) {
 
@@ -13,19 +13,25 @@ module.exports = function(Box, tempFolder) {
 
 			// check if it has resolve stashed
 			var msgID = arg.msgID;
-			if (!idsToResolves.hasOwnProperty(msgID)) {
+			if (!idsToPromiseCallbacks.hasOwnProperty(msgID)) {
 				// Probably error
 				console.error('Error? Process communication received msg with no resolve stashed: ' + msgID);
 				return; // Just return
 			}
 
-			// Call resolve with arg
-			idsToResolves[msgID](arg.data);
+			// If the incoming msg has success-field as true, we call resolve
+			// Otherwise we call reject
+			// This allows client to decide what to do on resolve vs. reject
+			if (arg.success) {
+				idsToPromiseCallbacks[msgID].resolve(arg.data);
+			} else {
+				idsToPromiseCallbacks[msgID].reject(arg.data);
+			}
 
 		});
 
-		var saveResolve = function(resolveFun, msgID) {
-			idsToResolves[msgID] = resolveFun;
+		var saveCallbacks = function(resolveFun, rejectFun, msgID) {
+			idsToPromiseCallbacks[msgID] = {resolve: resolveFun, reject: rejectFun};
 		}
 
 		var sendToBackgroundProcess = function(msg) {
@@ -36,7 +42,7 @@ module.exports = function(Box, tempFolder) {
 				// Basically here we just stash resolve so we can
 				// call it when results come back;
 				// Also consider doing some timeout/race stuff in case background never answers back
-				saveResolve(resolve, msg.msgID);
+				saveCallbacks(resolve, reject, msg.msgID);
 			});
 
 		}

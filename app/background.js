@@ -14,6 +14,9 @@ import env from './env';
 var ipcMain = require('electron').ipcMain;
 var uuid    = require('node-uuid');
 
+// App-specific deps
+var keyListener = require('./backgroundServices/keyComboListener')();
+
 var currentCreationWindow;
 var currentCreationWindowMsgPending;
 
@@ -30,7 +33,23 @@ ipcMain.on('msg', function(event, arg) {
     console.log("IPC MAIN RECEIVED MSG");
     console.log(arg);
     if (arg.type === 'askUser') {
-        openCreationWindow(arg.openFor, msgID);
+        try {
+            openCreationWindow(arg.openFor, msgID);
+        } catch (e) {
+            // Fail so bail out now
+            // Creation window was never created so no need to worry about it
+            garbageCollectRenderer(msgID); // Remove renderer - we have it already as event.sender
+            event.sender.send('msg', {
+                msgID: msgID,
+                success: false,
+            });
+            // separate system msg too
+            event.sender.send('systemMsg', {
+                type: 'error',
+                reason: 'Sulje ensin nykyinen luonti-ikkuna!'
+            });
+            
+        }
     } else if (arg.type === 'creationdata') {
         receivedCreationData(arg.data);
     }
@@ -47,24 +66,18 @@ var setApplicationMenu = function () {
     Menu.setApplicationMenu(Menu.buildFromTemplate(menus));
 };
 
-app.on('ready', function () {
-    setApplicationMenu();
 
-    var mainWindow = createWindow('main', {
-        width: 1000,
-        height: 680
-    });
-
-    mainWindow.loadURL('file://' + __dirname + '/index.html');
-
-    if (env.name !== 'production') {
-        mainWindow.openDevTools();
-    }
-});
+app.on('will-quit', keyListener.removeListeners);
 
 app.on('window-all-closed', function () {
     app.quit();
 });
+
+function garbageCollectRenderer(msgID) {
+    if (!msgIdsToRenderers.hasOwnProperty(msgID)) return;
+    msgIdsToRenderers[msgID] = null;
+    delete msgIdsToRenderers[msgID];
+}
 
 
 function openCreationWindow(openFor, msgID) {
@@ -80,6 +93,13 @@ function openCreationWindow(openFor, msgID) {
             width: 700,
             height: 520
     });
+    // First job is to bind listener for closed-event
+    // When window closes we must allow currentCreationWindow -> null
+
+    newWindow.on('closed', function() {
+        currentCreationWindow = null;
+    });
+
     if (env.name !== 'production') {
         newWindow.openDevTools();
     }
@@ -87,8 +107,11 @@ function openCreationWindow(openFor, msgID) {
     currentCreationWindow = newWindow;
     currentCreationWindowMsgPending = msgID;
 
+    // Perhaps refactor later dynamically using openFor-variable as file name
     if (openFor === 'screenshot') {
         newWindow.loadURL('file://' + __dirname + '/views/creationwindows/screenshot.html');
+    } else if (openFor === 'textnote') {
+        newWindow.loadURL('file://' + __dirname + '/views/creationwindows/textnote.html');
     }
 }
 
@@ -98,7 +121,7 @@ function receivedCreationData(data) {
 
     // Close the window
     if (currentCreationWindow) currentCreationWindow.close();
-    currentCreationWindow = null;
+    //currentCreationWindow = null; // Window.on('closed') listeners takes care of this
 
     // Route data back to our main renderer window which knows what to do with it
     var msgID = currentCreationWindowMsgPending;
@@ -112,12 +135,52 @@ function receivedCreationData(data) {
 
     renderer.send('msg', {
         msgID: currentCreationWindowMsgPending,
+        success: true,
         data: data
     });
 
     // Clean up ids->renderers table
-    msgIdsToRenderers[msgID] = null;
-    delete msgIdsToRenderers[msgID];
-
-
+    garbageCollectRenderer(msgID);
 }
+
+
+function keyComboPressed(eventName) {
+
+    if (eventName === 'screenshot') {
+        console.log("SCREENSHOT FROM KEY COMBO!");
+    }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+////////////////
+/// APP RUNTIME STARTS
+////////////////
+app.on('ready', function () {
+    // Set key listeners
+    keyListener.registerListeners({
+        'CommandOrControl+U': 'screenshot'
+    }, keyComboPressed);
+    setApplicationMenu();
+
+    var mainWindow = createWindow('main', {
+        width: 1000,
+        height: 680
+    });
+
+    mainWindow.loadURL('file://' + __dirname + '/index.html');
+
+    if (env.name !== 'production') {
+        mainWindow.openDevTools();
+    }
+});

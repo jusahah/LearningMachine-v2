@@ -30,6 +30,12 @@ module.exports = function(Box) {
 			});
 			
 		}
+
+		var requestTextNoteWriting = function() {
+
+			var textnoteService = context.getService('textnoteService');
+			textnoteService.openTextnoteForm();
+		}
 		
 
 		// Public API
@@ -38,15 +44,21 @@ module.exports = function(Box) {
 			onclick: function(event, element, elementType) {
 				console.log("CLICK IN TEXTNOTE: " + elementType);
 
+				if (elementType === 'writetextnote') {
+					requestTextNoteWriting();
+				}
+
 
 			},
 			onmessage: function(name, data) {
 				console.log("MSG IN TEXTNOTE: " + name + " | " + data.route);
-				if (data.route === moduleName) {
-					activate();
-				} else {
-					deactivate();
-				}				
+				if (name === 'routechanged') {
+					if (data.route === moduleName) {
+						activate();
+					} else {
+						deactivate();
+					}						
+				} 			
 				
 			}
 

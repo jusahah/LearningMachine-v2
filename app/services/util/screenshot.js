@@ -37,8 +37,10 @@ module.exports = function(Box, tempFolder) {
 				}).then(function(additionalData) {
 					console.log("ADDITIONAL DATA BACK FROM BG");
 					console.log(additionalData);
-					var scService = application.getService('serverCommunication');
-					scService.newItem(additionalData, tempFilePath);
+					var scService = application.getService('storageCommunication');
+					return scService.newScreenshot(additionalData, tempFilePath);
+				}).then(function(storageSuccess) {
+					console.warn("TO SERVER SAVE RESULT: " + storageSuccess);
 				});
 
 

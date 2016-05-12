@@ -20,9 +20,10 @@ console.log('The author of this app is:', appDir.read('package.json', 'json').au
 // SERVICES REGISTRATION
 // Args: Box, path_to_the_temporary_file_folder
 // CHANGE FOR PRODUCTION THE FOLDER PATH!
-require('./services/util/screenshot')(Box, app.getAppPath()); // Screenshotting tool
+require('./services/util/screenshot')(Box, app.getAppPath()); // Screenshotting API for view modules
+require('./services/textnoteService')(Box); // Textnote creation API for view modules
 require('./services/processCommunication')(Box); // Communication API with background process
-
+require('./services/storageCommunication')(Box); // Communication API with note-storage layer
 
 // VIEW MODULES REGISTRATION
 // Send Box in so view modules can bind themselves into it

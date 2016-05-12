@@ -1,0 +1,73 @@
+<h3>Textnote</h3>
+<hr>
+<form id="createform">
+  <fieldset class="form-group">
+    <label for="exampleInputEmail1">Muistiinpanon nimi</label>
+    <input type="text" class="form-control" id="nimi" placeholder="Anna nimi" required>
+    <small class="text-muted">We'll never share your email with anyone else.</small>
+  </fieldset>
+  <fieldset class="form-group">
+    <label for="exampleInputPassword1">Tagit</label>
+    <input type="text" class="form-control" id="tagit" placeholder="Ohjelmointi,Työ,Linux">
+    <small class="text-muted">Kirjoita tagit pilkulla eroteltuina</small>
+  </fieldset>
+  <fieldset class="form-group">
+    <label for="exampleSelect1">Kategoria</label>
+    <select class="form-control" id="kategoria">
+      <option>PHP</option>
+      <option>Javascript</option>
+      <option>Clojure</option>
+      <option>C++</option>
+    </select>
+  </fieldset>
+  <fieldset class="form-group">
+    <label for="exampleTextarea">Muistiinpano</label>
+    <textarea class="form-control" id="teksti" rows="20"></textarea>
+
+  </fieldset>
+
+  <button id="luo" class="btn btn-primary">Luo</button>
+</form>
+
+		<!-- Link to Google CDN's jQuery + jQueryUI; fall back to local -->
+		<script src="http://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+		<script>
+			if (!window.jQuery) {
+				document.write('<script src="../../js/libs/jquery-2.1.1.min.js"><\/script>');
+			}
+		</script>
+<script>
+	var ipcRenderer = require('electron').ipcRenderer;
+	var $ = window.jQuery;
+
+	$('#luo').on('click', gatherAndSend);
+	$('#createform').on('submit', gatherAndSend);
+
+
+	function gatherAndSend(e) {
+		e.preventDefault();
+		var data = {
+			nimi: $('#nimi').val(),
+			tagit: $('#tagit').val(),
+			kategoria: $('#kategoria').val(),
+			teksti: $('#teksti').val()
+		};
+
+		// Validate + sanitize data here if needed
+		// No need to generate msgID as this window is about be closed
+		// so it can not receive responses back
+		ipcRenderer.send('msg', {
+			type: 'creationdata',
+			data: data
+		});
+
+	}
+
+
+
+
+
+
+
+
+</script>
