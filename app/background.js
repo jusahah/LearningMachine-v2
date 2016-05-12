@@ -11,6 +11,31 @@ import createWindow from './helpers/window';
 // Special module holding environment variables which you declared
 // in config/env_xxx.json file.
 import env from './env';
+var ipcMain = require('electron').ipcMain;
+var uuid    = require('node-uuid');
+
+var currentCreationWindow;
+var currentCreationWindowMsgPending;
+
+var msgIdsToRenderers = {};
+
+// Setup listening of rendener msgs
+ipcMain.on('msg', function(event, arg) {
+    var msgID = arg.msgID; // We need this to send response back
+    if (msgID) {
+        // Save sending window to renderers map so we can use
+        // msgID later to send msg back
+        msgIdsToRenderers[msgID] = event.sender;
+    }
+    console.log("IPC MAIN RECEIVED MSG");
+    console.log(arg);
+    if (arg.type === 'askUser') {
+        openCreationWindow(arg.openFor, msgID);
+    } else if (arg.type === 'creationdata') {
+        receivedCreationData(arg.data);
+    }
+    
+});
 
 var mainWindow;
 
@@ -40,3 +65,59 @@ app.on('ready', function () {
 app.on('window-all-closed', function () {
     app.quit();
 });
+
+
+function openCreationWindow(openFor, msgID) {
+    if (currentCreationWindow) {
+        // already one creation window open... can not open two at the same time
+        console.log("Trying to open two creation windows at the same time");
+        throw "MULTIPLE_CREATION_WINDOWS_FORBIDDED";
+    }
+    console.log("Opening window for: " + openFor);
+    // Random identifier for the window
+    var winId = uuid.v1();
+    var newWindow = createWindow(winId, {
+            width: 700,
+            height: 520
+    });
+    if (env.name !== 'production') {
+        newWindow.openDevTools();
+    }
+    // Stash the link so we can later close it
+    currentCreationWindow = newWindow;
+    currentCreationWindowMsgPending = msgID;
+
+    if (openFor === 'screenshot') {
+        newWindow.loadURL('file://' + __dirname + '/views/creationwindows/screenshot.html');
+    }
+}
+
+function receivedCreationData(data) {
+    // This code should be abstracted as ALL responses back follow this scheme
+    console.log("Received creation data from creation window");
+
+    // Close the window
+    if (currentCreationWindow) currentCreationWindow.close();
+    currentCreationWindow = null;
+
+    // Route data back to our main renderer window which knows what to do with it
+    var msgID = currentCreationWindowMsgPending;
+
+    if (!msgIdsToRenderers.hasOwnProperty(msgID)) {
+        console.error("Msg ID did not match anything in the ids->renderers mapping: " + msgID);
+        throw "NO_RENDERER_PRESENT_IN_ROUTING_TABLE";
+    }
+
+    var renderer = msgIdsToRenderers[msgID];
+
+    renderer.send('msg', {
+        msgID: currentCreationWindowMsgPending,
+        data: data
+    });
+
+    // Clean up ids->renderers table
+    msgIdsToRenderers[msgID] = null;
+    delete msgIdsToRenderers[msgID];
+
+
+}

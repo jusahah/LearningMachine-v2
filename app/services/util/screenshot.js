@@ -18,11 +18,32 @@ module.exports = function(Box, tempFolder) {
 
 			// Generate unique identifier from temp file name 
 			var tempFileName = uuid.v1();
+			var tempFilePath = tempFolder + "/" + tempFileName + ".jpg";
 
-		    shell.exec("gnome-screenshot -a -f " + tempFolder + "/" + tempFileName + ".jpg", function(){
+		    shell.exec("gnome-screenshot -a -f " + tempFilePath, function(){
 		    	currentlyTakingScreenshot = false;
-		    	console.log("Screenshot saved to temp file: " + tempFolder + "/" + tempFileName + ".jpg");
-		    	Box.Application.broadcast('screenshotready', {tempFile: tempFileName});
+		    	console.log("Screenshot saved to temp file: " + tempFilePath);
+		    	// Broadcast for fun etc. Nobody actually should need this
+		    	Box.Application.broadcast('screenshotready', {tempFile: tempFilePath});
+
+		    	// Show screenshot to user and ask him to fill additional details
+				// For this we need another process to spawn new window tho
+				var pcService = application.getService('processCommunication');
+				pcService.sendToBackgroundProcess({
+					type: 'askUser',
+					openFor: 'screenshot', 
+					tempFile: tempFilePath,
+
+				}).then(function(additionalData) {
+					console.log("ADDITIONAL DATA BACK FROM BG");
+					console.log(additionalData);
+					var scService = application.getService('serverCommunication');
+					scService.newItem(additionalData, tempFilePath);
+				});
+
+
+
+
 		    });
 
 
