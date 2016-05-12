@@ -31,6 +31,7 @@ require('./views/viewmodules/menu/menu')(Box);
 require('./views/viewmodules/screenshot/screenshot')(Box);
 require('./views/viewmodules/textnote/textnote')(Box);
 require('./views/viewmodules/errors/errors')(Box);
+require('./views/viewmodules/keys/keys')(Box);
 
 // THIS ENDS THE INITIALIZATION/LOADING PHASE AND KICKS THE APPLICATION 
 // TO ITS RUNTIME STATE
