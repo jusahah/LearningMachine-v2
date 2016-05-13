@@ -40,6 +40,7 @@ module.exports = function(Box) {
 		var takeScreenshot = function() {
 			// Taking screenshot is pretty complex so this
 			// poor view module just assumes there is a service for that
+			console.log("Take screenshot");
 			var screenshotService = context.getService('screenshotService');
 			screenshotService.take();
 		}
@@ -52,7 +53,7 @@ module.exports = function(Box) {
 
 		// Public API
 		return {
-			messages: ['routechanged'],
+			messages: ['routechanged', 'keyComboEvent'],
 			onclick: function(event, element, elementType) {
 				console.log("CLICK IN SCREENSHOT: " + elementType);
 
@@ -72,6 +73,11 @@ module.exports = function(Box) {
 					}						
 				} else if (name === 'screenshotready') {
 					screenshotHasBeenSavedToTemp(data.tempFile);
+				} else if (name === 'keyComboEvent') {
+					if (data === 'screenshot') {
+						takeScreenshot();
+					}
+					
 				}
 			
 				

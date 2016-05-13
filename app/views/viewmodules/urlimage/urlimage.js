@@ -52,7 +52,7 @@ module.exports = function(Box) {
 
 		// Public API
 		return {
-			messages: ['routechanged'],
+			messages: ['routechanged', 'keyComboEvent'],
 			onclick: function(event, element, elementType) {
 				console.log("CLICK IN urlimage: " + elementType);
 
@@ -72,6 +72,11 @@ module.exports = function(Box) {
 					}						
 				} else if (name === 'urlimageready') {
 					urlimageHasBeenSavedToTemp(data.tempFile);
+				} else if (name === 'keyComboEvent') {
+					if (data === 'urlimage') {
+						takeurlimage();
+					}
+					
 				}
 			
 				

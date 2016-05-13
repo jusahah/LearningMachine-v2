@@ -40,7 +40,7 @@ module.exports = function(Box) {
 
 		// Public API
 		return {
-			messages: ['routechanged'],
+			messages: ['routechanged', 'keyComboEvent'],
 			onclick: function(event, element, elementType) {
 				console.log("CLICK IN TEXTNOTE: " + elementType);
 
@@ -58,7 +58,12 @@ module.exports = function(Box) {
 					} else {
 						deactivate();
 					}						
-				} 			
+				} else if (name === 'keyComboEvent') {
+					if (data === 'textnote') {
+						requestTextNoteWriting();
+					}
+					
+				}			
 				
 			}
 

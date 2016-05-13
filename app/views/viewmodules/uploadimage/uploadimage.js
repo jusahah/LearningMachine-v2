@@ -97,7 +97,7 @@ module.exports = function(Box) {
 
 		// Public API
 		return {
-			messages: ['routechanged'],
+			messages: ['routechanged', 'keyComboEvent'],
 			onclick: function(event, element, elementType) {
 				console.log("CLICK IN uploadimage: " + elementType);
 
@@ -117,6 +117,11 @@ module.exports = function(Box) {
 					}						
 				} else if (name === 'uploadimageready') {
 					uploadimageHasBeenSavedToTemp(data.tempFile);
+				} else if (name === 'keyComboEvent') {
+					if (data === 'uploadimage') {
+						takeuploadimage();
+					}
+					
 				}
 			
 				

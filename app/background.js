@@ -204,9 +204,16 @@ function receivedCreationData(data) {
 
 function keyComboPressed(eventName) {
 
-    if (eventName === 'screenshot') {
-        console.log("SCREENSHOT FROM KEY COMBO!");
-    }
+    console.log("Key combo event: " + eventName);
+
+    // Route it to renderer who knowns what to do
+    // Plus this way we get more unified flow
+    broadcastNextTickToRenderer({
+        type: 'broadcast',
+        reason: 'keyComboEvent',
+        data: eventName
+    });
+
 }
 
 
