@@ -13,7 +13,7 @@ module.exports = function() {
 		'urlimage': 0
 	};
 
-	var registerListeners = function(keys, isEnabled, eventCb) {
+	var registerListeners = function(keys, eventCb) {
 		console.log("INIT: Registering key combo listeners")
 
 
@@ -29,13 +29,16 @@ module.exports = function() {
 
 		// Save eventCb first
 		comboEventCb = eventCb;
+		eventsToCombos.isEnabled = keys.isEnabled && keys.isEnabled !== '0' ? 1 : 0;
 
 		// Iterate and register one by one
 		_.forOwn(keys, function(keyCombo, eventName) {
-			if (!isValid(keyCombo) || !eventsToCombos.hasOwnProperty(eventName)) return;
+			if (!eventsToCombos.hasOwnProperty(eventName) || eventName === 'isEnabled' || !isValid(keyCombo)) return;
 			console.log("INIT: Register key combo: " + eventName + " -> " + keyCombo);
 			registerCombo(keyCombo, eventName, eventsToCombos.isEnabled);
 		});
+
+		
 
 	}
 
@@ -120,6 +123,7 @@ module.exports = function() {
 	}
 
 	var isValid = function(keyCombo) {
+		console.log(keyCombo);
 		if (!keyCombo || keyCombo.trim() === '') return false;
 		var parts = keyCombo.split("+");
 		return parts[0] === 'CommandOrControl' && parts[1].length === 1;

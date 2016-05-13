@@ -55,6 +55,13 @@
 		renderCategoryOptions(payload.tree);
 
 	});
+	ipcRenderer.on('focusnow', function() {
+		console.log("Focus now order");
+		setTimeout(function() {
+			$('#kuvaurl').focus();	
+			console.warn("Focused");
+		}, 0);
+	});		
 	var $ = window.jQuery;
 
 	$('#luo').on('click', gatherAndSend);

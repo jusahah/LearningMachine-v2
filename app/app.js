@@ -11,6 +11,7 @@ import env from './env';
 require('handlebars');
 var request = require('request');
 var fs = require('fs');
+var Jimp = require("jimp"); // For testing
 
 console.log('Loaded environment variables:', env);
 
@@ -52,6 +53,7 @@ setTimeout(function() {
 	Box.Application.broadcast('appStarts', null);
 	// Show the app
 	$('#appScreen').show();
+	//testThumbnail();
 }, 300);
 
 
@@ -90,5 +92,24 @@ function testGET() {
 	});
 }
 
+
+function testThumbnail() {
+
+
+	console.log("Test png path: " + app.getPath("pictures") + "/testscreenshot.png");
+// open a file called "lenna.png"
+	Jimp.read(app.getPath("pictures") + "/soitot_ti.png", function (err, kehitysPng) {
+	    if (err) throw err;
+	    kehitysPng.resize(128, 128)            // resize
+	         .quality(90)                 // set JPEG quality
+	         .getBuffer(Jimp.MIME_JPEG, function(err, buffer) {
+	         	console.log("Jpg buffer");
+	         	var base64String = buffer.toString('base64');
+	         	console.log(base64String);
+	         	console.log(base64String.length)
+	         })
+	        
+	});
+}
 
 

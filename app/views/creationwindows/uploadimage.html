@@ -54,7 +54,13 @@
 		renderCategoryOptions(payload.tree);
 
 	});
-
+	ipcRenderer.on('focusnow', function() {
+		console.log("Focus now order");
+		setTimeout(function() {
+			$('#uploadimage').focus();	
+			console.warn("Focused");
+		}, 0);
+	});	
 	var payloadCached;
 	var filePath;
 

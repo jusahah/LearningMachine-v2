@@ -3,10 +3,10 @@ var jsonfile = require('jsonfile');
 // Default data settings
 var appData = {
 	keyCombos: {
-		'isEnabled': 0,
+		'isEnabled': 1,
 		'screenshot': 0,
-		'textnote': 0,
-		'uploadimage': 0,
+		'textnote': 'CommandOrControl+T',
+		'uploadimage': 'CommandOrControl+U',
 		'urlimage': 0
 	}
 };

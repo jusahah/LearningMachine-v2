@@ -141,7 +141,7 @@ function openCreationWindow(openFor, tempFile, msgID) {
     });
 
     if (env.name !== 'production') {
-        newWindow.openDevTools();
+        //newWindow.openDevTools();
     }
     // Stash the link so we can later close it
     currentCreationWindow = newWindow;
@@ -164,6 +164,8 @@ function openCreationWindow(openFor, tempFile, msgID) {
     // We need to send the data afterwards so its presented to user then
     newWindow.webContents.on('dom-ready', function() {
         console.log("Sending category tree...");
+        newWindow.focus();
+        newWindow.webContents.send('focusnow', {});        
         newWindow.webContents.send('renderPayload', {
             tree: cachedCategoryTreeData.tree,
             tempFile: tempFile, // Only screenshot needs this, the rest just ignore it
@@ -238,7 +240,7 @@ app.on('ready', function() {
 
     var appData = localState.getData();
 
-    keyListener.registerListeners(appData.keyCombos, true, keyComboPressed);
+    keyListener.registerListeners(appData.keyCombos, keyComboPressed);
     setApplicationMenu();
 
     mainWindow = createWindow('main', {
