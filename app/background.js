@@ -16,6 +16,7 @@ var uuid    = require('node-uuid');
 
 // App-specific deps
 var keyListener = require('./backgroundServices/keyComboListener')();
+var localState  = require('./backgroundServices/localState')(app.getAppPath());
 
 var currentCreationWindow;
 var currentCreationWindowMsgPending;
@@ -59,6 +60,19 @@ ipcMain.on('msg', function(event, arg) {
     } else if (arg.type === 'categoryTreeData') {
         console.log("BG: Setting category tree")
         cachedCategoryTreeData = arg.data;
+    } else if (arg.type === 'newKeys') {
+        receiveNewKeys(arg.data);
+    } else if (arg.type === 'needData') {
+        var data = localState.getData();
+        console.log("App data back to renderer");
+        console.log(data);
+        event.sender.send('msg', {
+            msgID: msgID,
+            success: true,
+            data: data
+        });
+        // Purge right away
+        garbageCollectRenderer(msgID);
     }
     
 });
@@ -80,10 +94,29 @@ app.on('window-all-closed', function () {
     app.quit();
 });
 
+function broadcastNextTickToRenderer(msg) {
+    setTimeout(function() {
+        console.log("Broadcasting to renderer");
+        console.log(msg);
+        mainWindow.webContents.send('systemmsg', msg);
+    }, 0);
+}
+
 function garbageCollectRenderer(msgID) {
     if (!msgIdsToRenderers.hasOwnProperty(msgID)) return;
     msgIdsToRenderers[msgID] = null;
     delete msgIdsToRenderers[msgID];
+}
+
+function receiveNewKeys(keys) {
+
+    var keyCombos = keyListener.registerNewKeys(keys);
+    localState.updateKeyCombos(keyCombos);
+    broadcastNextTickToRenderer({
+        type: 'broadcast',
+        reason: 'keyCombosChanged',
+        data: keyCombos
+    });
 }
 
 
@@ -191,14 +224,17 @@ function keyComboPressed(eventName) {
 ////////////////
 /// APP RUNTIME STARTS
 ////////////////
-app.on('ready', function () {
+app.on('ready', function() {
     // Set key listeners
-    keyListener.registerListeners({
-        'CommandOrControl+U': 'screenshot'
-    }, keyComboPressed);
+    // In real app they come from settings file or server
+    // Settings file makes more sense
+
+    var appData = localState.getData();
+
+    keyListener.registerListeners(appData.keyCombos, true, keyComboPressed);
     setApplicationMenu();
 
-    var mainWindow = createWindow('main', {
+    mainWindow = createWindow('main', {
         width: 1000,
         height: 680
     });

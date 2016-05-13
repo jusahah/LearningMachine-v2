@@ -28,6 +28,7 @@ require('./services/util/screenshot')(Box, app.getAppPath()); // Screenshotting 
 require('./services/urlimageService')(Box, app.getAppPath()); // URL image taking/creation API for view modules
 require('./services/uploadimageService')(Box, app.getAppPath()); // URL image taking/creation API for view modules
 require('./services/textnoteService')(Box); // Textnote creation API for view modules
+require('./services/settingsService')(Box); // Communication API with background process
 require('./services/processCommunication')(Box); // Communication API with background process
 require('./services/storageCommunication')(Box); // Communication API with note-storage layer
 

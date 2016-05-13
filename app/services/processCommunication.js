@@ -10,6 +10,7 @@ module.exports = function(Box, tempFolder) {
 		// Register listening service for incoming msgs from background
 		ipcRenderer.on('msg', function(event, arg) {
 			console.log("Incoming msg to processCommunication service");
+			console.log(arg);
 
 			// check if it has resolve stashed
 			var msgID = arg.msgID;
@@ -28,6 +29,13 @@ module.exports = function(Box, tempFolder) {
 				idsToPromiseCallbacks[msgID].reject(arg.data);
 			}
 
+		});
+
+		ipcRenderer.on('systemmsg', function(event, arg) {
+
+			// Mapping process communication stuff into Box app broadcasting
+			application.broadcast(arg.reason, arg.data);
+			
 		});
 
 		var saveCallbacks = function(resolveFun, rejectFun, msgID) {
@@ -52,6 +60,8 @@ module.exports = function(Box, tempFolder) {
 			ipcRenderer.send('msg', msg);
 			return Promise.resolve(); // for chaining purposes
 		}
+
+
 
 	    return {
 
