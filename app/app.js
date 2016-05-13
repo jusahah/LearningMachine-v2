@@ -9,6 +9,8 @@ import { greet } from './hello_world/hello_world'; // code authored by you in th
 import env from './env';
 
 require('handlebars');
+var request = require('request');
+var fs = require('fs');
 
 console.log('Loaded environment variables:', env);
 
@@ -50,6 +52,42 @@ setTimeout(function() {
 	// Show the app
 	$('#appScreen').show();
 }, 300);
+
+
+
+//setTimeout(testUploadToAWS, 1100);
+// WORKS LIKE FUCK!!!!
+function testUploadToAWS() {
+
+	console.log(app.getAppPath());
+	var formData = {
+	  key: 'appenv.js',
+	  file: fs.createReadStream(app.getAppPath() + '/appEnv.js')
+	};
+
+	request.post({
+		url:'http://[buckethere].s3.eu-central-1.amazonaws.com', 
+		formData: formData
+	}, function optionalCallback(err, httpResponse, body) {
+		console.log(httpResponse);
+		console.log(body);
+	  if (err) {
+	    return console.error('upload failed:', err);
+	  }
+	  console.log('Upload successful!  Server responded with:', body);
+	  setTimeout(testGET, 4500);
+	});
+
+}
+
+function testGET() {
+
+	request('http://[buckethere].s3.eu-central-1.amazonaws.com/appenv.js', function (error, response, body) {
+	    if (!error && response.statusCode == 200) {
+	        console.log(body); // Show the HTML for the Modulus homepage.
+	    }
+	});
+}
 
 
 

@@ -1,4 +1,26 @@
 var dialog = require('electron').remote.dialog;
+var request = require('request');
+var fs = require('fs');
+
+var testUploadToAWS = function() {
+	var formData = {
+	  key: 'uploadimage.js',
+	  file: fs.createReadStream('./appEnv.js')
+	};
+
+	request.post({
+		url:'http://learningmachinetest.s3.amazonaws.com', 
+		formData: formData
+	}, function optionalCallback(err, httpResponse, body) {
+		console.log(httpResponse);
+		console.log(body);
+	  if (err) {
+	    return console.error('upload failed:', err);
+	  }
+	  console.log('Upload successful!  Server responded with:', body);
+	});
+
+}
 
 module.exports = function(Box) {
 
