@@ -23,6 +23,8 @@ console.log('The author of this app is:', appDir.read('package.json', 'json').au
 // Args: Box, path_to_the_temporary_file_folder
 // CHANGE FOR PRODUCTION THE FOLDER PATH!
 require('./services/util/screenshot')(Box, app.getAppPath()); // Screenshotting API for view modules
+require('./services/urlimageService')(Box, app.getAppPath()); // URL image taking/creation API for view modules
+require('./services/uploadimageService')(Box, app.getAppPath()); // URL image taking/creation API for view modules
 require('./services/textnoteService')(Box); // Textnote creation API for view modules
 require('./services/processCommunication')(Box); // Communication API with background process
 require('./services/storageCommunication')(Box); // Communication API with note-storage layer
@@ -31,6 +33,8 @@ require('./services/storageCommunication')(Box); // Communication API with note-
 // Send Box in so view modules can bind themselves into it
 require('./views/viewmodules/menu/menu')(Box);
 require('./views/viewmodules/screenshot/screenshot')(Box);
+require('./views/viewmodules/urlimage/urlimage')(Box);
+require('./views/viewmodules/uploadimage/uploadimage')(Box);
 require('./views/viewmodules/textnote/textnote')(Box);
 require('./views/viewmodules/errors/errors')(Box);
 require('./views/viewmodules/keys/keys')(Box);

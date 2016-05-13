@@ -1,11 +1,16 @@
 <html>
 <head>
 	<meta charset="utf-8">
-
+	<link rel="stylesheet" type="text/css" href="css/darkroom.css">
 </head>
 <body>
-<h3>Textnote</h3>
+<h3>Upload image</h3>
 <hr>
+<button class="btn btn-primary" id="uploadimage">Upload image</button>
+<p id="imagepath"></p>
+<hr>
+
+
 <form id="createform">
   <fieldset class="form-group">
     <label for="exampleInputEmail1">Muistiinpanon nimi</label>
@@ -14,57 +19,88 @@
   </fieldset>
   <fieldset class="form-group">
     <label for="exampleInputPassword1">Tagit</label>
-    <input type="text" class="form-control" id="tagit" placeholder="Ohjelmointi,Työ,Linux">
-    <small class="text-muted">Kirjoita tagit pilkulla eroteltuina</small>
+    <input type="password" class="form-control" id="tagit" placeholder="Kirjoita tageja pilkulla eroteltuina">
   </fieldset>
   <fieldset class="form-group">
     <label for="exampleSelect1">Kategoria</label>
     <select class="form-control" id="kategoria">
-      
+
     </select>
   </fieldset>
   <fieldset class="form-group">
     <label for="exampleTextarea">Muistiinpano</label>
-    <textarea class="form-control" id="teksti" rows="20"></textarea>
-
+    <textarea class="form-control" id="teksti" rows="5"></textarea>
   </fieldset>
 
   <button id="luo" class="btn btn-primary">Luo</button>
 </form>
 
-		<!-- Link to Google CDN's jQuery + jQueryUI; fall back to local -->
 		<script src="http://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
 		<script>
 			if (!window.jQuery) {
 				document.write('<script src="../../js/libs/jquery-2.1.1.min.js"><\/script>');
 			}
 		</script>
-		
+
 <script>
+	var dialog = require('electron').remote.dialog;
 	var _ = require('lodash');
+	var fs = require('fs');
 	var ipcRenderer = require('electron').ipcRenderer;
-	// Listen for incoming categoryTree data
 	ipcRenderer.on('renderPayload', function(event, payload) {
 		console.log("RENDER PAYLOAD RECEIVED");
 		console.log(payload);
+		payloadCached = payload;
 		renderCategoryOptions(payload.tree);
 
 	});
+
+	var payloadCached;
+	var filePath;
+
 	var $ = window.jQuery;
+
+	var canBeClosed = true;
 
 	$('#luo').on('click', gatherAndSend);
 	$('#createform').on('submit', gatherAndSend);
 
+	$('#uploadimage').on('click', openUploadDialog);
+
+
+	function openUploadDialog() {
+
+		var fileNames = dialog.showOpenDialog({
+			filters: [
+				{
+					name: 'Images',
+					extensions: ['jpg', 'jpeg', 'png']
+				}
+			],
+			properties: ['openFile']
+		});
+
+		if (fileNames && fileNames.length > 0) {
+			filePath = fileNames[0];
+			$('#imagepath').empty().append(filePath);
+		} else {
+			$('#imagepath').empty();
+		}
+	}
 
 	function gatherAndSend(e) {
+		if (!canBeClosed) return;
 		e.preventDefault();
+
 		var data = {
+			imagepath: filePath,
 			nimi: $('#nimi').val(),
 			tagit: $('#tagit').val(),
 			kategoria: $('#kategoria').val(),
 			teksti: $('#teksti').val(),
-			datatype: 'textnote'
+			datatype: 'uploadimage'
 		};
+
 
 		// Validate + sanitize data here if needed
 		// No need to generate msgID as this window is about be closed

@@ -1,5 +1,14 @@
+<html>
+<head>
+	<meta charset="utf-8">
+	<link rel="stylesheet" type="text/css" href="css/darkroom.css">
+</head>
+<body>
 <h3>Screenshot additional info</h3>
 <hr>
+<div id="screenshotholder"></div>
+<button class="btn btn-warning" id="saveimage">Finish editing</button>
+
 <form id="createform">
   <fieldset class="form-group">
     <label for="exampleInputEmail1">Muistiinpanon nimi</label>
@@ -13,10 +22,7 @@
   <fieldset class="form-group">
     <label for="exampleSelect1">Kategoria</label>
     <select class="form-control" id="kategoria">
-      <option>PHP</option>
-      <option>Javascript</option>
-      <option>Clojure</option>
-      <option>C++</option>
+
     </select>
   </fieldset>
   <fieldset class="form-group">
@@ -27,29 +33,103 @@
   <button id="luo" class="btn btn-primary">Luo</button>
 </form>
 
-		<!-- Link to Google CDN's jQuery + jQueryUI; fall back to local -->
 		<script src="http://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
 		<script>
 			if (!window.jQuery) {
 				document.write('<script src="../../js/libs/jquery-2.1.1.min.js"><\/script>');
 			}
 		</script>
+		<script src="js/fabric.js"></script>
+		<script src="js/darkroom.js"></script>
 <script>
+	var _ = require('lodash');
+	var fs = require('fs');
 	var ipcRenderer = require('electron').ipcRenderer;
+	ipcRenderer.on('renderPayload', function(event, payload) {
+		console.log("RENDER PAYLOAD RECEIVED");
+		console.log(payload);
+		payloadCached = payload;
+		renderImage(payload.tempFile);
+		renderCategoryOptions(payload.tree);
+
+	});
+
+	var payloadCached;
+
 	var $ = window.jQuery;
+
+	var dkroom;
+	var jpegCropped;
+
+	var canBeClosed = true;
 
 	$('#luo').on('click', gatherAndSend);
 	$('#createform').on('submit', gatherAndSend);
 
+	$('#saveimage').on('click', function() {
+		console.log("Save image clicked");
+		
+		var jpegData = dkroom.sourceImage.toDataURL({
+			format: 'jpeg',
+			quality: 0.95
+		});
+
+		console.log(jpegData);
+		replaceOldFile(jpegData)
+
+		dkroom.selfDestroy();
+	});
+
+	function decodeBase64Image(dataString) {
+	  var matches = dataString.match(/^data:([A-Za-z-+\/]+);base64,(.+)$/),
+	    response = {};
+
+	  if (matches.length !== 3) {
+	    return new Error('Invalid input string');
+	  }
+
+	  response.type = matches[1];
+	  response.data = new Buffer(matches[2], 'base64');
+
+	  return response;
+	}
+
+	function replaceOldFile(data) {
+		canBeClosed = false;
+		var imageBuffer = decodeBase64Image(data);
+		if (payloadCached.tempFile) {
+			fs.unlink(payloadCached.tempFile, function(err) {
+				if (err) {
+					canBeClosed = true;
+					throw err;
+				}
+
+				fs.writeFile(payloadCached.tempFile, imageBuffer.data, function(err) {
+					canBeClosed = true;
+					if (err) throw err;
+					console.log("MODIFIED FILE SAVED!");
+				})
+
+			});
+			
+		}
+		
+
+	}
+
 
 	function gatherAndSend(e) {
+		if (!canBeClosed) return;
 		e.preventDefault();
+
 		var data = {
 			nimi: $('#nimi').val(),
 			tagit: $('#tagit').val(),
 			kategoria: $('#kategoria').val(),
-			teksti: $('#teksti').val()
+			teksti: $('#teksti').val(),
+			datatype: 'screenshot'
 		};
+
 
 		// Validate + sanitize data here if needed
 		// No need to generate msgID as this window is about be closed
@@ -61,6 +141,50 @@
 
 	}
 
+	var renderImage = function(tempFile) {
+		console.log("Rendering screenshot image");
+		var imageHTML = '<img src="' + tempFile + '" id="screenshotimage">';
+		$('#screenshotholder').append(imageHTML);
+		setTimeout(function() {
+			dkroom = new Darkroom('#screenshotimage', {
+			  minWidth: 100,
+			  minHeight: 100,
+			  maxWidth: 700,
+			  maxHeight: 700,	
+			});
+			setTimeout(function() {
+				console.log(dkroom);
+				
+			}, 400);
+
+			
+		}, 100); 
+	}
+
+	var renderCategoryOptions = function(tree) {
+			var gatheringArray = [];
+
+			var oneDepthDown = function(items, depth) {
+				_.each(items, function(item) {
+					var treeItem = {name: item.name, depth: depth, id: item.id};
+					gatheringArray.push(treeItem);
+					if (item.children || Array.isArray(item.children)) {
+						// recurse
+						oneDepthDown(item.children, depth + 1);
+					}
+				})
+			}
+
+			oneDepthDown(tree, 0);
+
+			var totalHTML = _.reduce(gatheringArray, function(html, item) {
+				var s = "<option value='" + item.id + "'>" + _.repeat('-', item.depth) + " " + item.name + "</option>";
+				return html + s;
+			}, '');
+
+			$('#kategoria').empty().append(totalHTML);
+	}
+
 
 
 
@@ -69,3 +193,5 @@
 
 
 </script>
+</body>
+</html>

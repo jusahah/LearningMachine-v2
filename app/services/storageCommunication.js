@@ -38,6 +38,26 @@ module.exports = function(Box) {
 			});			
 		}
 
+		var newUrlimage = function(data, imageFile) {
+			// Pretend we send image and data to server or disk here
+			return new Promise(function(resolve, reject) {
+				setTimeout(function() {
+					console.log("Fake sending to URL: " + env.SERVER_URL);
+					resolve(201); // Fake 201 Created response code
+				}, 500 + Math.random()*1500);
+			});					
+		}
+
+		var newImageFromDisk = function(data, imageFile) {
+			// Pretend we send image and data to server or disk here
+			return new Promise(function(resolve, reject) {
+				setTimeout(function() {
+					console.log("Fake sending to URL: " + env.SERVER_URL);
+					resolve(201); // Fake 201 Created response code
+				}, 500 + Math.random()*1500);
+			});			
+		}
+
 		var getCategoryTree = function() {
 			// Use current access data to make fetch request either to server or disk
 			// For now we fake this
@@ -86,9 +106,10 @@ module.exports = function(Box) {
 		}
 
 	    return {
-
+	    	newImageFromDisk: newImageFromDisk,
 	        newScreenshot: newScreenshot,
 	        newTextnote: newTextnote,
+	        newUrlimage: newUrlimage,
 	        updateStorageAccessInfo: updateStorageAccessInfo,
 	        getCategoryTree: getCategoryTree
 

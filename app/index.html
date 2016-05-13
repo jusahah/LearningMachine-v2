@@ -150,9 +150,12 @@
 								<li class="aikavahtilink" data-type="screenshot-route" data-payload="0">
 									<a>Kuvakaappaus</a>
 								</li>
-								<li class="aikavahtilink" data-type="image-route" data-payload="0">
+								<li class="aikavahtilink" data-type="uploadimage-route" data-payload="0">
 									<a>Kuva tietokoneelta</a>
 								</li>
+								<li class="aikavahtilink" data-type="urlimage-route" data-payload="0">
+									<a>Kuva netistä</a>
+								</li>								
 								<li class="aikavahtilink" data-type="textnote-route" data-payload="short">
 									<a>Lyhyt teksti</a>
 								</li>
@@ -216,7 +219,9 @@
 					</div>	
 
 
-					<!-- VIEW MODULE CONTAINERS -->				
+					<!-- VIEW MODULE CONTAINERS -->		
+					<div id="uploadimageContainer" data-module="uploadimage" style="display: none;"></div>	
+					<div id="urlimageContainer" data-module="urlimage" style="display: none;"></div>		
 					<div id="screenshotContainer" data-module="screenshot" style="display: none;"></div>
 					<div id="textnoteContainer" data-module="textnote" style="display: none;"></div>
 					<div id="keysContainer" data-module="keys" style="display: none;"></div>

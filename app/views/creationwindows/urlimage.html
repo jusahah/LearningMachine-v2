@@ -4,13 +4,18 @@
 
 </head>
 <body>
-<h3>Textnote</h3>
+<h3>Image from URL</h3>
 <hr>
 <form id="createform">
+<fieldset class="form-group">
+    <label for="exampleInputEmail1">Kuvan URL</label>
+    <input type="text" class="form-control" id="kuvaurl" placeholder="http://www.facebook.com/user/1/images/zuckenberg_watermelon.jpg" required>
+    <small class="text-muted">Copypaste url address above</small>
+  </fieldset>
   <fieldset class="form-group">
     <label for="exampleInputEmail1">Muistiinpanon nimi</label>
     <input type="text" class="form-control" id="nimi" placeholder="Anna nimi" required>
-    <small class="text-muted">We'll never share your email with anyone else.</small>
+    
   </fieldset>
   <fieldset class="form-group">
     <label for="exampleInputPassword1">Tagit</label>
@@ -59,11 +64,12 @@
 	function gatherAndSend(e) {
 		e.preventDefault();
 		var data = {
+			kuvaurl: $('#kuvaurl').val(),
 			nimi: $('#nimi').val(),
 			tagit: $('#tagit').val(),
 			kategoria: $('#kategoria').val(),
 			teksti: $('#teksti').val(),
-			datatype: 'textnote'
+			datatype: 'urlimage'
 		};
 
 		// Validate + sanitize data here if needed

@@ -20,7 +20,7 @@ module.exports = function(Box, tempFolder) {
 			var tempFileName = uuid.v1();
 			var tempFilePath = tempFolder + "/" + tempFileName + ".jpg";
 
-		    shell.exec("gnome-screenshot -a -f " + tempFilePath, function(){
+		    shell.exec("gnome-screenshot -w -f " + tempFilePath, function(){
 		    	currentlyTakingScreenshot = false;
 		    	console.log("Screenshot saved to temp file: " + tempFilePath);
 		    	// Broadcast for fun etc. Nobody actually should need this

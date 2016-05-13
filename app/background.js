@@ -38,7 +38,7 @@ ipcMain.on('msg', function(event, arg) {
     console.log(arg);
     if (arg.type === 'askUser') {
         try {
-            openCreationWindow(arg.openFor, msgID);
+            openCreationWindow(arg.openFor, arg.tempFile, msgID);
         } catch (e) {
             // Fail so bail out now
             // Creation window was never created so no need to worry about it
@@ -87,7 +87,7 @@ function garbageCollectRenderer(msgID) {
 }
 
 
-function openCreationWindow(openFor, msgID) {
+function openCreationWindow(openFor, tempFile, msgID) {
     if (currentCreationWindow) {
         // already one creation window open... can not open two at the same time
         console.log("Trying to open two creation windows at the same time");
@@ -97,8 +97,8 @@ function openCreationWindow(openFor, msgID) {
     // Random identifier for the window
     var winId = uuid.v1();
     var newWindow = createWindow(winId, {
-            width: 700,
-            height: 520
+            width: 800,
+            height: 800
     });
     // First job is to bind listener for closed-event
     // When window closes we must allow currentCreationWindow -> null
@@ -115,15 +115,26 @@ function openCreationWindow(openFor, msgID) {
     currentCreationWindowMsgPending = msgID;
 
     // Perhaps refactor later dynamically using openFor-variable as file name
+
+    // ADD HERE FOR NEW TYPES OF CREATIONS
     if (openFor === 'screenshot') {
         newWindow.loadURL('file://' + __dirname + '/views/creationwindows/screenshot.html');
     } else if (openFor === 'textnote') {
         newWindow.loadURL('file://' + __dirname + '/views/creationwindows/textnote.html');
+    } else if (openFor === 'urlimage') {
+        newWindow.loadURL('file://' + __dirname + '/views/creationwindows/urlimage.html');
+    } else if (openFor === 'uploadimage') {
+        newWindow.loadURL('file://' + __dirname + '/views/creationwindows/uploadimage.html');
     }
+    
+    // This part is same for all - they all need category data injected in
     // We need to send the data afterwards so its presented to user then
     newWindow.webContents.on('dom-ready', function() {
         console.log("Sending category tree...");
-        newWindow.webContents.send('categoryTree', cachedCategoryTreeData.tree);
+        newWindow.webContents.send('renderPayload', {
+            tree: cachedCategoryTreeData.tree,
+            tempFile: tempFile, // Only screenshot needs this, the rest just ignore it
+        });
     });
     // We should also have some kind of "did-not-load" or "dom-failed" listener!
 
