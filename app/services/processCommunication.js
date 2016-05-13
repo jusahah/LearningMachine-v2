@@ -47,9 +47,16 @@ module.exports = function(Box, tempFolder) {
 
 		}
 
+		var sendToBackgroundProcessNoResponse = function(msg) {
+			// No need to generate tracking token as we dont expect response
+			ipcRenderer.send('msg', msg);
+			return Promise.resolve(); // for chaining purposes
+		}
+
 	    return {
 
-	        sendToBackgroundProcess: sendToBackgroundProcess
+	        sendToBackgroundProcess: sendToBackgroundProcess,
+	        sendToBackgroundProcessNoResponse: sendToBackgroundProcessNoResponse
 
 	    };
 	});

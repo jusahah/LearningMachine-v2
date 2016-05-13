@@ -38,11 +38,59 @@ module.exports = function(Box) {
 			});			
 		}
 
+		var getCategoryTree = function() {
+			// Use current access data to make fetch request either to server or disk
+			// For now we fake this
+			return new Promise(function(resolve, reject) {
+				setTimeout(function() {
+					resolve({
+						fetchedTimestamp: Date.now(),
+						tree: [
+							{
+								name: 'PHP' + Math.floor(Math.random()*10000),
+								id: 'phpr72nME835jaj3OOPS8393',
+								color: '#11eeaa',
+								children: [
+									{
+										name: 'Laravel',
+										id: 'laravel835jaj3OOPS8393',
+										color: '#11ffee',								
+									},
+									{
+										name: 'Codeigniter',
+										id: 'ci835jaj3OOPS8393',
+										color: '#44ffdd',								
+									},
+								]
+							},
+							{
+								name: 'Javascript',
+								id: 'javascript835jaj3OOPS8393',
+								color: '#ee22cc',	
+								children: null							
+							}					
+
+						]
+					})
+				}, 100 + Math.random()*500);
+			}).tap(function(categoryTreeData) {
+				// Send to background so it can use this when opening note creation windows
+				// (those windows need to know what categories there are for user to select one)
+				var pcService = application.getService('processCommunication');
+				pcService.sendToBackgroundProcessNoResponse({
+					type: 'categoryTreeData',
+					data: categoryTreeData
+				});
+
+			});
+		}
+
 	    return {
 
 	        newScreenshot: newScreenshot,
 	        newTextnote: newTextnote,
-	        updateStorageAccessInfo: updateStorageAccessInfo
+	        updateStorageAccessInfo: updateStorageAccessInfo,
+	        getCategoryTree: getCategoryTree
 
 	    };
 	});

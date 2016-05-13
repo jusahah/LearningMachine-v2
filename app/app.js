@@ -8,6 +8,8 @@ import jetpack from 'fs-jetpack'; // module loaded from npm
 import { greet } from './hello_world/hello_world'; // code authored by you in this project
 import env from './env';
 
+require('handlebars');
+
 console.log('Loaded environment variables:', env);
 
 var app = remote.app;
@@ -32,6 +34,7 @@ require('./views/viewmodules/screenshot/screenshot')(Box);
 require('./views/viewmodules/textnote/textnote')(Box);
 require('./views/viewmodules/errors/errors')(Box);
 require('./views/viewmodules/keys/keys')(Box);
+require('./views/viewmodules/categorytree/categorytree')(Box);
 
 // THIS ENDS THE INITIALIZATION/LOADING PHASE AND KICKS THE APPLICATION 
 // TO ITS RUNTIME STATE
@@ -39,6 +42,7 @@ setTimeout(function() {
 	Box.Application.init({
 		debug: true
 	});
+	Box.Application.broadcast('appStarts', null);
 	// Show the app
 	$('#appScreen').show();
 }, 300);

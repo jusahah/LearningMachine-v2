@@ -38,6 +38,12 @@
 		</script>
 <script>
 	var ipcRenderer = require('electron').ipcRenderer;
+	// Listen for incoming categoryTree data
+	ipcRenderer.on('categoryTree', function(event, categoryTree) {
+		console.log("CATEGORY TREE RECEIVED");
+		console.log(categoryTree);
+		
+	});
 	var $ = window.jQuery;
 
 	$('#luo').on('click', gatherAndSend);

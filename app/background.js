@@ -22,6 +22,10 @@ var currentCreationWindowMsgPending;
 
 var msgIdsToRenderers = {};
 
+
+// Local background cache
+var cachedCategoryTreeData;
+
 // Setup listening of rendener msgs
 ipcMain.on('msg', function(event, arg) {
     var msgID = arg.msgID; // We need this to send response back
@@ -52,6 +56,9 @@ ipcMain.on('msg', function(event, arg) {
         }
     } else if (arg.type === 'creationdata') {
         receivedCreationData(arg.data);
+    } else if (arg.type === 'categoryTreeData') {
+        console.log("BG: Setting category tree")
+        cachedCategoryTreeData = arg.data;
     }
     
 });
@@ -113,6 +120,13 @@ function openCreationWindow(openFor, msgID) {
     } else if (openFor === 'textnote') {
         newWindow.loadURL('file://' + __dirname + '/views/creationwindows/textnote.html');
     }
+    // We need to send the data afterwards so its presented to user then
+    newWindow.webContents.on('dom-ready', function() {
+        console.log("Sending category tree...");
+        newWindow.webContents.send('categoryTree', cachedCategoryTreeData.tree);
+    });
+    // We should also have some kind of "did-not-load" or "dom-failed" listener!
+
 }
 
 function receivedCreationData(data) {

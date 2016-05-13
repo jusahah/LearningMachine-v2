@@ -8,3 +8,4 @@ console.log("INIT: LOADING HTMLS TO DOM")
 $('#screenshotContainer').load('views/viewmodules/screenshot/screenshot.html');
 $('#textnoteContainer').load('views/viewmodules/textnote/textnote.html');
 $('#keysContainer').load('views/viewmodules/keys/keys.html');
+$('#categorytreeContainer').load('views/viewmodules/categorytree/categorytree.html');
