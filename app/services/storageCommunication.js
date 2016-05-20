@@ -30,13 +30,70 @@ module.exports = function(Box) {
 		}
 
 		var newTextnote = function(textData) {
-			// Pretend we send text data to server or disk here
-			return new Promise(function(resolve, reject) {
-				setTimeout(function() {
-					console.log("Fake sending to URL: " + env.SERVER_URL);
-					resolve(201); // Fake 201 Created response code
-				}, 500 + Math.random()*1500);
-			});			
+			console.warn("Storaging new text note!!");
+			console.log(textData);
+			return application.getService('settingsService').getApiKey()
+			.then(function(apiKey) {
+				return new Promise(function(resolve, reject) {
+					var options = {
+						url: env.API_URL + "newtext",
+						method: 'POST',
+						headers: {
+							'X-Authorization': apiKey
+						},
+						form: {
+							name: textData.nimi,
+							category_id: textData.kategoria,
+							summary: textData.teksti,
+							note: textData.teksti,
+							tags: textData.tagit
+						}
+
+					};					
+					request(options, function(err, response, body) {
+						if (err || response.statusCode !== 200) {
+							console.error("New text note req rejected");
+							return reject(err);
+						}
+						console.log("Text item went to server???");
+						console.log(body);
+						return resolve();
+
+					})
+
+				});				
+
+			});
+			/*
+			.then(function(apiKey) {
+				return new Promise(function(resolve, reject) {
+					var options = {
+						url: env.API_URL + "s3key",
+						headers: {
+							'X-Authorization': apiKey
+						}
+
+					};					
+					request(options, function(err, response, body) {
+						if (err || response.statusCode !== 200) {
+							console.error("S3 key req rejected");
+							return reject(err);
+						}
+						console.log("Response to S3 key req");
+						console.log(JSON.parse(body));
+						return resolve(JSON.parse(body).s3key);
+
+					})
+
+				});				
+
+			})
+			.then(function(s3key) {
+				if (!s3key || s3key.trim() === '' || s3key.length < 24) throw "Amazon S3 key invalid";
+				// Save to S3 instance
+				return 
+			})		
+*/	
 		}
 
 		var newUrlimage = function(data, imageFile) {
