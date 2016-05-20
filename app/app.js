@@ -42,6 +42,7 @@ require('./views/viewmodules/uploadimage/uploadimage')(Box);
 require('./views/viewmodules/textnote/textnote')(Box);
 require('./views/viewmodules/errors/errors')(Box);
 require('./views/viewmodules/keys/keys')(Box);
+require('./views/viewmodules/serversettings/serversettings')(Box);
 require('./views/viewmodules/categorytree/categorytree')(Box);
 
 // THIS ENDS THE INITIALIZATION/LOADING PHASE AND KICKS THE APPLICATION 
@@ -53,7 +54,7 @@ setTimeout(function() {
 	Box.Application.broadcast('appStarts', null);
 	// Show the app
 	$('#appScreen').show();
-	//testThumbnail();
+	//git stestThumbnail();
 }, 300);
 
 

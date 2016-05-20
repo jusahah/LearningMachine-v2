@@ -62,6 +62,10 @@ ipcMain.on('msg', function(event, arg) {
         cachedCategoryTreeData = arg.data;
     } else if (arg.type === 'newKeys') {
         receiveNewKeys(arg.data);
+    } else if (arg.type === 'newApiKey') {
+        console.log("New api key");
+        console.log(arg.data);
+        receiveNewApiKey(arg.data);
     } else if (arg.type === 'needData') {
         var data = localState.getData();
         console.log("App data back to renderer");
@@ -119,6 +123,15 @@ function receiveNewKeys(keys) {
     });
 }
 
+function receiveNewApiKey(apiKey) {
+    localState.updateApiKey(apiKey);
+    broadcastNextTickToRenderer({
+        type: 'broadcast',
+        reason: 'apiKeyChanged',
+        data: apiKey
+    });
+}
+
 
 function openCreationWindow(openFor, tempFile, msgID) {
     if (currentCreationWindow) {
@@ -167,7 +180,7 @@ function openCreationWindow(openFor, tempFile, msgID) {
         newWindow.focus();
         newWindow.webContents.send('focusnow', {});        
         newWindow.webContents.send('renderPayload', {
-            tree: cachedCategoryTreeData.tree,
+            tree: cachedCategoryTreeData,
             tempFile: tempFile, // Only screenshot needs this, the rest just ignore it
         });
     });

@@ -11,3 +11,4 @@ $('#screenshotContainer').load('views/viewmodules/screenshot/screenshot.html');
 $('#textnoteContainer').load('views/viewmodules/textnote/textnote.html');
 $('#keysContainer').load('views/viewmodules/keys/keys.html');
 $('#categorytreeContainer').load('views/viewmodules/categorytree/categorytree.html');
+$('#serversettingsContainer').load('views/viewmodules/serversettings/serversettings.html');

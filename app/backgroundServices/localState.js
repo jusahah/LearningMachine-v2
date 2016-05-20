@@ -8,7 +8,8 @@ var appData = {
 		'textnote': 'CommandOrControl+T',
 		'uploadimage': 'CommandOrControl+U',
 		'urlimage': 0
-	}
+	},
+	apiKey: '123456abcdefg'
 };
 
 module.exports = function(dataPath) {
@@ -30,7 +31,9 @@ module.exports = function(dataPath) {
 	}
 
 	return {
-
+		updateApiKey: function(apiKey) {
+			appData.apiKey = apiKey;
+		},
 		updateKeyCombos: function(combos) {
 			appData.keyCombos = combos;
 			return writeToDisk();

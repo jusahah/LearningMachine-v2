@@ -59,14 +59,15 @@ module.exports = function(Box) {
 		var render = function() {
 			purgeOld();
 			if (!cachedCategoryData) return renderEmpty();
-			var tree = cachedCategoryData.tree;
-			var ts   = cachedCategoryData.fetchedTimestamp;
+			var tree = cachedCategoryData;
+			//var ts   = cachedCategoryData.fetchedTimestamp;
 
 			var gatheringArray = [];
 
 			var oneDepthDown = function(items, depth) {
 				_.each(items, function(item) {
-					var treeItem = {color: item.color, name: item.name, depth: depth, margin: depth*10};
+					console.log("Category " + item.category.id);
+					var treeItem = {color: item.category.color, name: item.category.name, depth: depth, margin: depth*10};
 					gatheringArray.push(treeItem);
 					if (item.children || Array.isArray(item.children)) {
 						// recurse
@@ -87,8 +88,9 @@ module.exports = function(Box) {
 		}
 
 		var downloadLatestCategoryTree = function() {
-			context.getService('storageCommunication').getCategoryTree().then(function(results) {
-				cachedCategoryData = results;
+			context.getService('storageCommunication').getMetaData(true).then(function(results) {
+				console.log(results.categories);
+				cachedCategoryData = results.categories;
 				render();
 			}).catch(function(e) {
 				console.error("INIT: Category tree fetching failed");
@@ -104,8 +106,8 @@ module.exports = function(Box) {
 
 			console.log("Category tree view module asking for initial data");
 
-			context.getService('storageCommunication').getCategoryTree().then(function(results) {
-				cachedCategoryData = results;
+			context.getService('storageCommunication').getMetaData(true).then(function(results) {
+				cachedCategoryData = results.categories;
 			}).catch(function(e) {
 				console.error("INIT: Category tree fetching failed");
 				console.error(e);

@@ -7,6 +7,7 @@ var env     = require('../appEnv');
 module.exports = function(Box) {
 
 	var currentAccessData = {};
+	var currentMetaData = null;
 
 	Box.Application.addService('storageCommunication', function(application) {
 		// To load new server API keys or disk folder paths or etc...
@@ -58,48 +59,54 @@ module.exports = function(Box) {
 			});			
 		}
 
-		var getCategoryTree = function() {
+		var downloadMetaData = function() {
+			return application.getService('settingsService').getApiKey()
+				.then(function(apiKey) {
+					var options = {
+						url: env.API_URL + "metadata",
+						headers: {
+							'X-Authorization': apiKey
+						}
+
+					};
+					console.warn("Sending metadata request");
+					console.log(options);
+					return new Promise(function(resolve, reject) {
+						request(options, function(err, response, body) {
+							if (err || response.statusCode !== 200) {
+								console.error("Metadata req rejected");
+								return reject(err);
+							}
+							console.log("Response to metadata req");
+							console.log(JSON.parse(body));
+							return resolve(JSON.parse(body));
+
+						})
+
+					});
+			});
+
+		}
+
+		var getMetaData = function(syncServer) {
 			// Use current access data to make fetch request either to server or disk
 			// For now we fake this
-			return new Promise(function(resolve, reject) {
-				setTimeout(function() {
-					resolve({
-						fetchedTimestamp: Date.now(),
-						tree: [
-							{
-								name: 'PHP' + Math.floor(Math.random()*10000),
-								id: 'phpr72nME835jaj3OOPS8393',
-								color: '#11eeaa',
-								children: [
-									{
-										name: 'Laravel',
-										id: 'laravel835jaj3OOPS8393',
-										color: '#11ffee',								
-									},
-									{
-										name: 'Codeigniter',
-										id: 'ci835jaj3OOPS8393',
-										color: '#44ffdd',								
-									},
-								]
-							},
-							{
-								name: 'Javascript',
-								id: 'javascript835jaj3OOPS8393',
-								color: '#ee22cc',	
-								children: null							
-							}					
+			var metaPromise;
+			if (syncServer) {
+				metaPromise = downloadMetaData();
+			} else {
+				metaPromise = Promise.resolve(currentMetaData);
+			}
 
-						]
-					})
-				}, 100 + Math.random()*500);
-			}).tap(function(categoryTreeData) {
+			return metaPromise.tap(function(metaData) {
+				// Save locally here
+				currentMetaData = metaData;
 				// Send to background so it can use this when opening note creation windows
 				// (those windows need to know what categories there are for user to select one)
 				var pcService = application.getService('processCommunication');
 				pcService.sendToBackgroundProcessNoResponse({
 					type: 'categoryTreeData',
-					data: categoryTreeData
+					data: metaData.categories
 				});
 
 			});
@@ -111,7 +118,7 @@ module.exports = function(Box) {
 	        newTextnote: newTextnote,
 	        newUrlimage: newUrlimage,
 	        updateStorageAccessInfo: updateStorageAccessInfo,
-	        getCategoryTree: getCategoryTree
+	        getMetaData: getMetaData
 
 	    };
 	});
