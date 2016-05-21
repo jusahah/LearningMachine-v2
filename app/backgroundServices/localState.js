@@ -9,7 +9,7 @@ var appData = {
 		'uploadimage': 'CommandOrControl+U',
 		'urlimage': 0
 	},
-	apiKey: '82f382044e1f7b21af868e5cdcc2a59635077621',
+	apiKey: '',
 	s3BaseUrl: ''
 };
 
