@@ -1,6 +1,7 @@
 var request = require('request');
 var Promise = require('bluebird');
 var env     = require('../appEnv');
+var fs      = require('fs');
 
 // Get server api address from enviroment file!
 
@@ -43,9 +44,32 @@ module.exports = function(Box) {
 		}
 
 		var sendFileToS3 = function(s3BaseUrl, fileKey, file) {
+			console.warn("S3 send data");
+			console.log(s3BaseUrl);
+			console.log(fileKey);
+			console.log(file);
+			return new Promise(function(resolve, reject) {
+				var formData = {
+				  key: fileKey,
+				  file: fs.createReadStream(file)
+				};
+
+				request.post({
+					url:s3BaseUrl, 
+					formData: formData
+				}, function optionalCallback(err, httpResponse, body) {
+					console.log(httpResponse);
+					console.log(body);
+				  if (err) {
+				  	console.error(err);
+				    return reject(err)
+
+				  }
+				  return resolve();
+				});
+			});
 
 			// Fake for now
-			return Promise.resolve(true);
 		}
 
 		var sendImageMetaDataToLaravel = function(apiKey, imageData, fileKey) {
@@ -64,7 +88,7 @@ module.exports = function(Box) {
 			            summary: imageData.teksti,
 			            category_id: imageData.kategoria,
 			            tags: imageData.tagit,
-			            imagepath: 'http://www.shakki.net/' + fileKey,
+			            filekey: fileKey,
 			            thumbnail: imageData.thumbnail
 					}
 
