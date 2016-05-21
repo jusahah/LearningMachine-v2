@@ -34,9 +34,19 @@ module.exports = function(Box, tempFolder) {
 					openFor: 'screenshot', 
 					tempFile: tempFilePath,
 
-				}).then(function(additionalData) {
+				})
+				.then(function(additionalData) {
+					return [
+						additionalData,
+						application.getService('thumbnailService').toThumbnail(tempFilePath)
+					];
+				})
+				.spread(function(additionalData, base64Thumbnail) {
 					console.log("ADDITIONAL DATA BACK FROM BG");
 					console.log(additionalData);
+					console.log("Thumbnail generated");
+					console.log(base64Thumbnail);
+					additionalData.thumbnail = base64Thumbnail;
 					var scService = application.getService('storageCommunication');
 					return scService.newScreenshot(additionalData, tempFilePath);
 				}).then(function(storageSuccess) {

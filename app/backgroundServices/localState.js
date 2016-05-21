@@ -9,7 +9,8 @@ var appData = {
 		'uploadimage': 'CommandOrControl+U',
 		'urlimage': 0
 	},
-	apiKey: '123456abcdefg'
+	apiKey: '82f382044e1f7b21af868e5cdcc2a59635077621',
+	s3BaseUrl: ''
 };
 
 module.exports = function(dataPath) {
@@ -33,6 +34,7 @@ module.exports = function(dataPath) {
 	return {
 		updateApiKey: function(apiKey) {
 			appData.apiKey = apiKey;
+			return writeToDisk();
 		},
 		updateKeyCombos: function(combos) {
 			appData.keyCombos = combos;
@@ -40,6 +42,10 @@ module.exports = function(dataPath) {
 		},
 		getData: function() {
 			return Object.assign({}, appData);
+		},
+		updateS3: function(baseUrl) {
+			appData.s3BaseUrl = baseUrl;
+			return writeToDisk();
 		}
 	}
 

@@ -19,14 +19,104 @@ module.exports = function(Box) {
 
 		}
 
-		var newScreenshot = function(data, screenshotFile) {
+		var getNewFileKeyForS3 = function(apiKey) {
 
-			// Pretend we send file to server or disk here
 			return new Promise(function(resolve, reject) {
+				var options = {
+					url: env.API_URL + "s3key",
+					method: 'GET',
+					headers: {
+						'X-Authorization': apiKey
+					}
+				};					
+				request(options, function(err, response, body) {
+					if (err || response.statusCode !== 200) {
+						return reject(err);
+					}
+					console.log("S3 key back from server");
+					console.log(body);
+					return resolve(JSON.parse(body).s3key);
+
+				})
+
+			});					
+		}
+
+		var sendFileToS3 = function(s3BaseUrl, fileKey, file) {
+
+			// Fake for now
+			return Promise.resolve(true);
+		}
+
+		var sendImageMetaDataToLaravel = function(apiKey, imageData, fileKey) {
+			console.log("Sending to laravel image data");
+
+			return new Promise(function(resolve, reject) {
+				console.log("Promise runs!");
+				var options = {
+					url: env.API_URL + "newimage",
+					method: 'POST',
+					headers: {
+						'X-Authorization': apiKey
+					},
+					form: {
+			            name: imageData.nimi,
+			            summary: imageData.teksti,
+			            category_id: imageData.kategoria,
+			            tags: imageData.tagit,
+			            imagepath: 'http://www.shakki.net/' + fileKey,
+			            thumbnail: imageData.thumbnail
+					}
+
+				};				
+				console.log("Täällä taas 1")
+				// We need a timeout here!
+				// There is some technical issue with request library 
+				// that needs to yield control to runtime before making this call
 				setTimeout(function() {
-					resolve(201); // Fake 201 Created response code
-				}, 500 + Math.random()*1500);
-			});
+					console.log("Timeout runs");
+					request(options, function(err, response, body) {
+						console.log("Täällä taas 2");
+						if (err || response.statusCode !== 200) {
+							console.error("New image req rejected");
+							console.log(body);
+							return reject(err);
+						}
+						console.log("Image item went to server???");
+						console.log(body);
+						return resolve(true);
+
+					});					
+				}, 0);	
+
+
+			});	
+
+			console.log("Reached here");			
+		}
+
+		var newScreenshot = function(data, screenshotFile) {
+			var apiKeyProm = application.getService('settingsService').getApiKey();
+			var s3UrlProm  = application.getService('settingsService').getS3Url();
+			var s3FileKey  = application.getService('settingsService').getS3Url();
+
+			return Promise.all([apiKeyProm, s3UrlProm])
+			.spread(function(apiKey, s3BaseUrl) {
+				console.log("Getting file key from server api with key: " + apiKey);
+				return [apiKey, s3BaseUrl, getNewFileKeyForS3(apiKey)];
+			})
+			.spread(function(apiKey, s3BaseUrl, fileKey) {
+				console.warn("SCREENSHOT REQUEST TO S3 STARTING");
+				console.log(apiKey + " | " + s3BaseUrl + " | " + fileKey);
+				return [apiKey, fileKey, sendFileToS3(s3BaseUrl, fileKey, screenshotFile)];			
+			})
+			.spread(function(apiKey, fileKey, s3Result) {
+				console.log("Screenshot request to laravel starting");
+				return sendImageMetaDataToLaravel(apiKey, data, fileKey);
+			})
+			.then(function(res) {
+				console.warn("DONE ALL!");
+			})
 		}
 
 		var newTextnote = function(textData) {
@@ -165,8 +255,32 @@ module.exports = function(Box) {
 					type: 'categoryTreeData',
 					data: metaData.categories
 				});
+				pcService.sendToBackgroundProcessNoResponse({
+					type: 's3BaseUrl',
+					data: metaData.s3BaseUrl
+				});
 
 			});
+		}
+
+		var validateApiKey = function(apiKey) {
+			var options = {
+				url: env.API_URL + "checkkey/" + apiKey,
+			};
+
+			return new Promise(function(resolve, reject) {
+				request(options, function(err, response, body) {
+					if (err || response.statusCode !== 200) {
+						console.error("Check key req rejected");
+						return reject(err);
+					}
+					console.log("Response to checkkey req");
+					console.log(JSON.parse(body));
+					return resolve(JSON.parse(body).result);
+
+				})
+
+			});			
 		}
 
 	    return {
@@ -175,7 +289,8 @@ module.exports = function(Box) {
 	        newTextnote: newTextnote,
 	        newUrlimage: newUrlimage,
 	        updateStorageAccessInfo: updateStorageAccessInfo,
-	        getMetaData: getMetaData
+	        getMetaData: getMetaData,
+	        validateApiKey: validateApiKey
 
 	    };
 	});

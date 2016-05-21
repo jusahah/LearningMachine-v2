@@ -173,7 +173,7 @@
 
 			var oneDepthDown = function(items, depth) {
 				_.each(items, function(item) {
-					var treeItem = {name: item.name, depth: depth, id: item.id};
+					var treeItem = {name: item.category.name, depth: depth, id: item.category.id};
 					gatheringArray.push(treeItem);
 					if (item.children || Array.isArray(item.children)) {
 						// recurse

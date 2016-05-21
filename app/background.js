@@ -77,6 +77,10 @@ ipcMain.on('msg', function(event, arg) {
         });
         // Purge right away
         garbageCollectRenderer(msgID);
+    } else if (arg.type === 's3BaseUrl') {
+        // Save
+        var s3BaseUrl = arg.data;
+        localState.updateS3(s3BaseUrl);
     }
     
 });

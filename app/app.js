@@ -25,6 +25,7 @@ console.log('The author of this app is:', appDir.read('package.json', 'json').au
 // SERVICES REGISTRATION
 // Args: Box, path_to_the_temporary_file_folder
 // CHANGE FOR PRODUCTION THE FOLDER PATH!
+require('./services/util/thumbnail')(Box); // Screenshotting API for view modules
 require('./services/util/screenshot')(Box, app.getAppPath()); // Screenshotting API for view modules
 require('./services/urlimageService')(Box, app.getAppPath()); // URL image taking/creation API for view modules
 require('./services/uploadimageService')(Box, app.getAppPath()); // URL image taking/creation API for view modules

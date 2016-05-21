@@ -12,6 +12,8 @@ module.exports = function(Box) {
 				isHidden = true;
 				$el.hide();
 			}
+
+			resetSaveKeyButton();
 		}
 
 		var activate = function() {
@@ -38,9 +40,29 @@ module.exports = function(Box) {
 			$el.find('#apikey_input').val(apiKey);
 		}
 
+		var resetSaveKeyButton = function() {
+			var b = $el.find('#savekeybutton');
+			b.empty().append('Tallenna uusi avain');
+			b.removeClass('btn-danger btn-success').addClass('btn-primary');			
+		}
+
+		var showValidationResult = function(wasSuccess) {
+			console.log("Validation result in serversettings: " + wasSuccess);
+			var b = $el.find('#savekeybutton');
+			if (!wasSuccess) {
+				b.empty().append('Key not found');
+				b.removeClass('btn-primary btn-success').addClass('btn-danger');
+				setTimeout(resetSaveKeyButton, 1250);
+			} else {
+				b.empty().append('You are connected!');
+				b.removeClass('btn-primary btn-danger').addClass('btn-success');				
+			}
+
+
+		}
+
 		var requestApiKey = function() {
 			return context.getService('settingsService').getApiKey();
-		
 		}
 
 		var gatherserversettingsettings = function() {
@@ -50,10 +72,11 @@ module.exports = function(Box) {
 			console.log("Gathered serversettings from form");
 			console.log(serversettings);
 
-			context.getService('settingsService').apiKeyUpdated(serversettings.apikey);
+			context.getService('settingsService').apiKeyUpdated(serversettings.apikey)
+			.then(function(validationResult) {
+				showValidationResult(!!validationResult);
+			});
 		}
-
-		
 
 		// Public API
 		return {
